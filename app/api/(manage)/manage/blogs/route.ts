@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { BACKEND_URL } from "../../constant";
+import { BACKEND_URL } from "@/app/api/constant";
 
 export const GET = async (req: NextRequest) => {
   const headers: HeadersInit = {
@@ -11,7 +11,8 @@ export const GET = async (req: NextRequest) => {
     headers.Cookie = cookie;
   }
 
-  const response = await fetch(`${BACKEND_URL}/api/manage/blogs`, {
+  const query = req.nextUrl.search;
+  const response = await fetch(`${BACKEND_URL}/api/manage/blogs${query}`, {
     method: "GET",
     headers,
   });

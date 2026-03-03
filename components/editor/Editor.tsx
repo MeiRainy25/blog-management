@@ -5,7 +5,7 @@ import { RefObject } from "react";
 
 interface EditorProps {
   value: JSONContent;
-  onChange: (value: JSONContent) => void;
+  onChange?: (value: JSONContent) => void;
   editable?: boolean;
   ref?: RefObject<EditorRef | null>;
 }
@@ -16,8 +16,16 @@ const Editor: React.FC<EditorProps> = ({
   editable = false,
   ref,
 }) => {
+  const onChangeEvent = (value: JSONContent) => {
+    onChange?.(value);
+  };
   return (
-    <EditorRoot value={value} onChange={onChange} editable={editable} ref={ref}>
+    <EditorRoot
+      value={value}
+      onChange={onChangeEvent}
+      editable={editable}
+      ref={ref}
+    >
       <EditorContent />
     </EditorRoot>
   );

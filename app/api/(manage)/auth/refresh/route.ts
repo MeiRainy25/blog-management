@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { BACKEND_URL } from "../../constant";
+import { BACKEND_URL } from "@/app/api/constant";
 
 export const POST = async (req: NextRequest) => {
   const headers: HeadersInit = {

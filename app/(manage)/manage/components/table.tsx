@@ -108,8 +108,6 @@ export function DataTable<TData, TValue>({
           ? updater({ pageIndex, pageSize })
           : updater;
 
-      console.log(next);
-
       // 对内pageIndex从0开始, 对外page应该从1开始
       const nextPage = next.pageIndex;
       const nextSize = next.pageSize;

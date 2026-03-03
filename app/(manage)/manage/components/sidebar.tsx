@@ -101,7 +101,7 @@ export function ManageSidebarItem(props: SidebarItemProps) {
             "transition-all duration-150",
             collapsed ? "px-1" : "px-2",
             {
-              "bg-muted": isActive,
+              "bg-muted text-muted-foreground": isActive,
             },
           )}
           onClick={redirectEvent}

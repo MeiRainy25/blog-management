@@ -8,7 +8,7 @@ export default function ManageLayout({
   return (
     <TooltipProvider>
       <ManageSidebarProvider defaultOpen={false}>
-        <div className={"flex flex-col min-h-screen"}>
+        <div className={"flex flex-col min-h-screen theme-manage"}>
           <ManageHeader />
           <main className={"flex flex-1"}>
             <ManageSidebar />

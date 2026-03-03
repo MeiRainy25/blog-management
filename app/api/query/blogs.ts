@@ -15,12 +15,9 @@ export interface TBlogData {
     id: string;
     nickname: string;
   };
-  createAt: Date;
+  createdAt: Date;
   updatedAt: Date;
-  tags: {
-    id: string;
-    name: string;
-  }[];
+  tags: TTag[];
 }
 export interface TBlogsData {
   total: number;
@@ -40,13 +37,35 @@ export async function getBlogs(params: IGetBlogs) {
     order = "desc",
   } = params;
   return await request.get<TBlogsData>("/api/manage/blogs", {
-    params: {
-      page,
-      pageSize,
-      sortBy,
-      order,
-    },
+    page,
+    pageSize,
+    sortBy,
+    order,
   });
+}
+
+/**
+ * 获取公开博客列表
+ * @returns
+ */
+export async function getPublicBlogs(params: IGetBlogs) {
+  const {
+    page = 1,
+    pageSize = 10,
+    sortBy = "createdAt",
+    order = "desc",
+  } = params;
+  return await request.get<TBlogsData>("/api/blogs", {
+    page,
+    pageSize,
+    sortBy,
+    order,
+  });
+}
+
+export interface TTag {
+  id: string;
+  name: string;
 }
 
 export interface TBlogDetail {
@@ -57,10 +76,7 @@ export interface TBlogDetail {
     id: string;
     nickname: string;
   };
-  tags: {
-    id: string;
-    name: string;
-  }[];
+  tags: TTag[];
   createdAt: Date;
   updatedAt: Date;
 }

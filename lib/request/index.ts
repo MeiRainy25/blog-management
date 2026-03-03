@@ -55,13 +55,19 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const isPassApi = PASS_API_URL.includes(originalRequest.url);
-    console.log(originalRequest);
+
     if (!error.response) {
       return Promise.reject(error);
     }
 
+    // refresh接口错误, 直接抛出错误
+    if (originalRequest.url === API_REFRESH_ACCESS_TOKEN) {
+      return Promise.reject(error);
+    }
+
     if (
-      (error.response?.status === 401 && !originalRequest._retry) ||
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
       !isPassApi
     ) {
       originalRequest._retry = true;

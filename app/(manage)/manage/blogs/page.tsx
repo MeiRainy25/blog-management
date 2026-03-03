@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { DataTable } from "../components/table";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import { deleteBlog, getBlogs, TBlogData, TBlogsData } from "@/app/api/query";
+import { deleteBlog, getBlogs, TBlogData } from "@/app/api/query";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import {
@@ -75,7 +75,9 @@ export default function BlogsPage() {
 
   const columns: ColumnDef<TBlogData>[] = [
     {
-      header: "ID",
+      header: () => {
+        return <span>{"ID"}</span>;
+      },
       accessorKey: "id",
     },
     {
