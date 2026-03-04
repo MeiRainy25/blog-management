@@ -3,7 +3,7 @@
 import React from "react";
 import { DataTable } from "../components/table";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import { deleteBlog, getBlogs, TBlogData } from "@/app/api/query";
+import { deleteBlog, getBlogs, TBlogData, TTag } from "@/app/api/query";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import {
@@ -20,6 +20,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function BlogsPage() {
   const router = useRouter();
@@ -33,7 +39,6 @@ export default function BlogsPage() {
     isPending,
     data: blogsData,
     isFetching,
-    isPlaceholderData,
     refetch,
   } = useQuery({
     queryKey: ["blogs", pagination.current, pagination.pageSize],
@@ -83,6 +88,53 @@ export default function BlogsPage() {
     {
       header: "标题",
       accessorKey: "title",
+    },
+    {
+      header: "标签",
+      accessorKey: "tags",
+      size: 80,
+      cell: ({ getValue }) => {
+        const value = getValue() as TTag[];
+
+        if (value.length === 0) return null;
+
+        return (
+          <div className={"flex items-center gap-2"}>
+            <Badge
+              style={{ backgroundColor: value[0]?.color }}
+              className={"rounded-md text-primary-foreground select-none"}
+            >
+              {value[0].name}
+            </Badge>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  hidden={value.length <= 1}
+                  className={
+                    "inline-flex items-center justify-center w-6 h-6 rounded-full border bg-muted text-muted-foreground select-none"
+                  }
+                >
+                  {value.length > 1 && `+${value.length - 1}`}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className={"flex items-center gap-2"}>
+                {value.slice(1).map((tag) => (
+                  <Badge
+                    key={tag.id}
+                    style={{ backgroundColor: tag.color }}
+                    className={
+                      "rounded-md text-primary-foreground select-none z-1"
+                    }
+                  >
+                    {tag.name}
+                  </Badge>
+                ))}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        );
+      },
     },
     {
       header: "作者",

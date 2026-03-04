@@ -11,12 +11,17 @@ import React from "react";
 import { EditorRef } from "../../../../components/editor/ui/EditorRoot";
 import {
   createBlog,
+  getTags,
   ICreateBlogDto,
   IUpdateBlogDto,
   TBlogDetail,
   updateBlog,
 } from "@/app/api/query";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Loading } from "@/components/loading";
+import MultiSelect from "@/components/multi-select";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface BlogEditorProps {
   blog?: TBlogDetail;
@@ -34,6 +39,7 @@ const TiptapNodeSchema: z.ZodType<JSONContent, JSONContent> = z.lazy(() =>
 const formSchema = z.object({
   title: z.string().min(1, "标题不能为空").max(50, "标题不能超过50个字符"),
   content: TiptapNodeSchema,
+  tags: z.array(z.number()),
 });
 
 export default function BlogEditor(props: BlogEditorProps) {
@@ -42,15 +48,34 @@ export default function BlogEditor(props: BlogEditorProps) {
 
   const editorIns = React.useRef<EditorRef | null>(null);
 
+  const router = useRouter();
+
+  const {
+    data: tagsData,
+    isFetching: tagsFetching,
+    isPending: tagsPending,
+  } = useQuery({
+    queryKey: ["tags"],
+    queryFn: () => getTags({ page: 1, pageSize: 100 }),
+  });
   const { mutate: create, isPending: createLoading } = useMutation({
     mutationFn: (dto: ICreateBlogDto) => createBlog(dto),
+    onSuccess: () => {
+      router.back();
+      toast.success("博客创建成功");
+    },
   });
   const { mutate: update, isPending: updateLoading } = useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: IUpdateBlogDto }) =>
       updateBlog(id, dto),
+    onSuccess: () => {
+      router.back();
+      toast.success("博客更新成功");
+    },
   });
 
   const onSubmit = (value: z.infer<typeof formSchema>) => {
+    console.log(value);
     if (isEdit) {
       const updateBlogDto: IUpdateBlogDto = {
         ...value,
@@ -70,22 +95,23 @@ export default function BlogEditor(props: BlogEditorProps) {
     defaultValues: {
       title: blog?.title ?? "",
       content: blog?.content ?? EmptyContent,
+      tags: blog?.tags.map((tag) => tag.id) ?? [],
     },
     validators: {
-      onChange: formSchema,
       onSubmit: formSchema,
     },
     onSubmit: ({ value }) => onSubmit(value),
   });
 
   return (
-    <div className="flex flex-col gap-2 p-1">
+    <div className="flex flex-col gap-2 p-1 relative h-full w-full">
+      <Loading loading={createLoading || updateLoading} />
       <form
         onSubmit={(e) => {
           e.preventDefault();
           form.handleSubmit();
         }}
-        className={"flex flex-col gap-4"}
+        className={"flex flex-col gap-4 px-72"}
       >
         <form.Field name="title">
           {(field) => {
@@ -118,6 +144,37 @@ export default function BlogEditor(props: BlogEditorProps) {
             );
           }}
         </form.Field>
+        <form.Field name="tags">
+          {(field) => {
+            const isInvalid = !field.state.meta.isValid;
+
+            const tagOptions =
+              tagsData?.data.map((tag) => ({
+                label: tag.name,
+                value: tag.id,
+                disabled: false,
+              })) ?? [];
+
+            return (
+              <Field aria-invalid={isInvalid} data-invalid={isInvalid}>
+                <FieldLabel htmlFor={field.name} className={"text-lg"}>
+                  标签
+                </FieldLabel>
+
+                <MultiSelect
+                  id={field.name}
+                  value={field.state.value}
+                  onChange={field.handleChange}
+                  aria-invalid={isInvalid}
+                  options={tagOptions}
+                />
+                {isInvalid && (
+                  <p className="text-destructive text-sm">标签不合法</p>
+                )}
+              </Field>
+            );
+          }}
+        </form.Field>
         <form.Field name="content">
           {(field) => {
             const isInvalid = !field.state.meta.isValid;
@@ -141,12 +198,18 @@ export default function BlogEditor(props: BlogEditorProps) {
                 >
                   <Editor {...fieldProps} editable={true} ref={editorIns} />
                 </div>
+                {isInvalid && (
+                  <p className="text-destructive text-sm">内容不合法</p>
+                )}
               </Field>
             );
           }}
         </form.Field>
-        {/* <form.Field></form.Field> */}
-        <Button type="submit">{isEdit ? "保存" : "提交"}</Button>
+        <div className={"flex items-center justify-center"}>
+          <Button type="submit" className={"w-36 cursor-pointer"}>
+            {isEdit ? "保存" : "提交"}
+          </Button>
+        </div>
       </form>
     </div>
   );

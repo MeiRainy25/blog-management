@@ -32,7 +32,6 @@ export const POST = async (req: NextRequest) => {
   }
 
   const body = await req.json();
-  console.log(body);
   const response = await fetch(`${BACKEND_URL}/api/manage/blogs`, {
     method: "POST",
     body: JSON.stringify(body),

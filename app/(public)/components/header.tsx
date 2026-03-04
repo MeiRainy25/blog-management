@@ -18,8 +18,8 @@ export function Header() {
 
   const navList: Nav[] = [
     { title: "博客", href: "/", icon: <Notebook /> },
-    { title: "标签", href: "/tags", icon: <Tag /> },
-    { title: "其他", href: "/other", icon: <MessageCircleMore /> },
+    // { title: "标签", href: "/tags", icon: <Tag /> },
+    // { title: "其他", href: "/other", icon: <MessageCircleMore /> },
   ];
 
   return (

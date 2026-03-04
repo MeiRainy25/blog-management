@@ -17,7 +17,7 @@ export interface TBlogData {
   };
   createdAt: Date;
   updatedAt: Date;
-  tags: TTag[];
+  tags: TBlogTag[];
 }
 export interface TBlogsData {
   total: number;
@@ -63,9 +63,11 @@ export async function getPublicBlogs(params: IGetBlogs) {
   });
 }
 
-export interface TTag {
-  id: string;
+export interface TBlogTag {
+  id: number;
   name: string;
+  color?: string;
+  group?: string;
 }
 
 export interface TBlogDetail {
@@ -76,7 +78,7 @@ export interface TBlogDetail {
     id: string;
     nickname: string;
   };
-  tags: TTag[];
+  tags: TBlogTag[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -89,7 +91,7 @@ export interface ICreateBlogDto {
   title: string;
   content: JSONContent;
   authorId: string;
-  tags?: string[];
+  tags?: number[];
 }
 
 /**
@@ -104,7 +106,7 @@ export async function createBlog(dto: ICreateBlogDto) {
 export interface IUpdateBlogDto {
   title?: string;
   content?: JSONContent;
-  tags?: string[];
+  tags?: number[];
 }
 
 /**

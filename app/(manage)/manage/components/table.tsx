@@ -17,6 +17,8 @@ import {
 } from "@tanstack/react-table";
 import { LoaderCircle } from "lucide-react";
 import React from "react";
+import { EmptyIcon } from "@/components/icons";
+import { Loading } from "@/components/loading";
 
 export interface PaginationProps {
   /**
@@ -51,7 +53,7 @@ export function DataTable<TData, TValue>({
   data,
   columns,
   pagination = false,
-  loading,
+  loading = false,
 }: DataTableProps<TData, TValue>) {
   const paginationEnabled = pagination !== false;
   const defaultCurrent = paginationEnabled
@@ -136,14 +138,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className={"overflow-hidden rounded-sm border h-full w-full relative"}>
-      <div
-        className={
-          "absolute flex items-center justify-center w-full h-full bg-muted"
-        }
-        hidden={!loading}
-      >
-        <LoaderCircle className={"animate-spin"} />
-      </div>
+      <Loading loading={loading} />
       <Table className="w-full table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -180,18 +175,22 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className={"h-24 text-center"}
-              >
-                No Result
+              <TableCell colSpan={columns.length} className="h-96 p-0">
+                <div className="h-full w-full flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                    <EmptyIcon className="fill-muted-foreground" />
+                    <span className={"text-muted-foreground text-lg"}>
+                      没有找到数据...
+                    </span>
+                  </div>
+                </div>
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
 
-      {paginationEnabled && (
+      {paginationEnabled && total >= 1 && (
         <div className={"flex items-center justify-end gap-2 border-t p-2"}>
           <span className={"text-sm text-muted-foreground"}>
             第 {pageIndex + 1} / {totalPages} 页

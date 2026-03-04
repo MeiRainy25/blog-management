@@ -1,4 +1,5 @@
 import axios from "axios";
+import { userAuthStore } from "../store/auth";
 
 /**
  * 刷新accessToken的api地址
@@ -56,12 +57,13 @@ axiosInstance.interceptors.response.use(
     const originalRequest = error.config;
     const isPassApi = PASS_API_URL.includes(originalRequest.url);
 
-    if (!error.response) {
+    // refresh接口错误, 直接抛出错误
+    if (originalRequest.url === API_REFRESH_ACCESS_TOKEN) {
+      userAuthStore.getState().clear(); // 清空zustand缓存
       return Promise.reject(error);
     }
 
-    // refresh接口错误, 直接抛出错误
-    if (originalRequest.url === API_REFRESH_ACCESS_TOKEN) {
+    if (!error.response) {
       return Promise.reject(error);
     }
 

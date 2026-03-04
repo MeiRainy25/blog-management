@@ -8,10 +8,9 @@ import {
 } from "@/components/ui/tooltip";
 import { userAuthStore } from "@/lib/store/auth";
 import { cn } from "@/lib/utils";
-import { Gauge, Book, LogOut, House } from "lucide-react";
+import { Book, LogOut, House, Tag } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import React from "react";
-import UserBtnIcon from "./user-btn";
 import UserMenu, { IMenu } from "./user-menu";
 
 export interface SidebarContextProps {
@@ -29,6 +28,19 @@ export interface SidebarItemProps {
   path: string;
 }
 
+const sidebarList: SidebarItemProps[] = [
+  {
+    title: "博客管理",
+    path: "/manage/blogs",
+    icon: <Book />,
+  },
+  {
+    title: "标签管理",
+    path: "/manage/tags",
+    icon: <Tag />,
+  },
+];
+
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_ICON = "4rem";
 const SIDEBAR_ICON_SIZE = "6rem";
@@ -37,14 +49,6 @@ const SidebarContext = React.createContext<SidebarContextProps | null>(null);
 
 export default function ManageSidebar() {
   const { state } = useSidebar();
-
-  const sidebarList: SidebarItemProps[] = [
-    {
-      title: "博客",
-      path: "/manage/blogs",
-      icon: <Book />,
-    },
-  ];
 
   return (
     <div

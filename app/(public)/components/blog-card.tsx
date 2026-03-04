@@ -1,6 +1,6 @@
 "use client";
 
-import { TBlogData, TTag } from "@/app/api/query";
+import { TBlogData, TBlogTag } from "@/app/api/query";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -48,7 +48,7 @@ export default function BlogCard(props: BlogCardProps) {
 }
 
 export interface TagBadgeProps {
-  tags: TTag[];
+  tags: TBlogTag[];
   showTagsNumber?: number;
   variant?: React.ComponentProps<typeof Badge>["variant"];
 }
