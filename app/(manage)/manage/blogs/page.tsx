@@ -3,7 +3,13 @@
 import React from "react";
 import { DataTable } from "../components/table";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import { deleteBlog, getBlogs, TBlogData, TTag } from "@/app/api/query";
+import {
+  deleteBlog,
+  exportBlog,
+  getBlogs,
+  TBlogData,
+  TTag,
+} from "@/app/api/query";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import {
@@ -13,6 +19,7 @@ import {
 import {
   CircleEllipsis,
   CirclePlus,
+  Download,
   RotateCcw,
   SquarePen,
   Trash,
@@ -27,7 +34,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { openFileUploader } from "@/lib/utils";
-import * as marked from "marked";
 
 export default function BlogsPage() {
   const router = useRouter();
@@ -57,6 +63,10 @@ export default function BlogsPage() {
     onSuccess: () => {
       refetch();
     },
+  });
+
+  const { mutate: exportAll, isPending: isExporting } = useMutation({
+    mutationFn: () => exportBlog(blogsData?.data.map((blog) => blog.id) ?? []),
   });
 
   const onCreateBlog = () => {
@@ -199,6 +209,10 @@ export default function BlogsPage() {
       <div className={"flex items-center justify-between"}>
         <p className={"font-bold text-lg"}>博客列表</p>
         <div className={"flex items-center gap-2"}>
+          <Button size={"lg"} className={"text-md"} onClick={() => exportAll()}>
+            <Download />
+            全部导出
+          </Button>
           <Button size="lg" className={"text-md"} onClick={() => refetch()}>
             <RotateCcw />
           </Button>

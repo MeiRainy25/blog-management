@@ -23,6 +23,8 @@ import MultiSelect from "@/components/multi-select";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { marked } from "marked";
+import { userAuthStore } from "@/lib/store/auth";
+import { queryClient } from "@/lib/react-query";
 
 interface BlogEditorProps {
   blog?: TBlogDetail;
@@ -46,6 +48,7 @@ const formSchema = z.object({
 export default function BlogEditor(props: BlogEditorProps) {
   const { blog } = props;
   const isEdit = !!blog?.id;
+  const id = userAuthStore((store) => store.user?.id);
 
   const editorIns = React.useRef<EditorRef | null>(null);
 
@@ -66,6 +69,7 @@ export default function BlogEditor(props: BlogEditorProps) {
   const { mutate: create, isPending: createLoading } = useMutation({
     mutationFn: (dto: ICreateBlogDto) => createBlog(dto),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
       router.back();
       toast.success("博客创建成功");
       localStorage.removeItem("uploadedBlogTitle");
@@ -76,23 +80,27 @@ export default function BlogEditor(props: BlogEditorProps) {
     mutationFn: ({ id, dto }: { id: string; dto: IUpdateBlogDto }) =>
       updateBlog(id, dto),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
       router.back();
       toast.success("博客更新成功");
     },
   });
 
   const onSubmit = (value: z.infer<typeof formSchema>) => {
-    console.log(value);
+    if (!id) return;
+
+    const markdown = editorIns.current?.getMarkdown() ?? "";
     if (isEdit) {
       const updateBlogDto: IUpdateBlogDto = {
         ...value,
+        markdown: normalizeMarkdown(markdown),
       };
       update({ id: blog.id, dto: updateBlogDto });
     } else {
       const createBlogDto: ICreateBlogDto = {
         ...value,
-        //TODO: 测试用固定userId
-        authorId: "cmltfsfmy0000acgci0lwrmi6",
+        authorId: id,
+        markdown: normalizeMarkdown(markdown),
       };
       create(createBlogDto);
     }
@@ -241,4 +249,23 @@ export default function BlogEditor(props: BlogEditorProps) {
       </form>
     </div>
   );
+}
+
+function normalizeMarkdown(md: string) {
+  let out = md.replace(/\r\n/g, "\n");
+
+  // 清理不可见字符
+  out = out.replace(/[\u200B\uFEFF]/g, "");
+  out = out.replace(/[\u00A0]+$/g, "");
+
+  // 清理尾部“字面量 &nbsp; 行”
+  // 只清尾部，避免误伤正文
+  out = out.replace(/\n(?:&nbsp;|&#160;)[ \t]*\n?$/i, "\n");
+
+  // 尾部空白行归一
+  out = out.replace(/[ \t]+\n/g, "\n");
+  out = out.replace(/\n[ \t]*$/g, "\n");
+  out = out.replace(/\n{2,}$/g, "\n");
+
+  return out;
 }

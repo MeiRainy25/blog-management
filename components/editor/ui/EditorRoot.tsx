@@ -14,6 +14,7 @@ export type EditorRef = {
   focus: () => void;
   commands: () => Editor["commands"] | undefined;
   getJson: () => JSONContent;
+  getMarkdown: () => string;
 };
 
 interface EditorRootProps {
@@ -66,6 +67,7 @@ export const EditorRoot: React.FC<EditorRootProps> = ({
       focus: () => editor?.commands.focus(),
       commands: () => editor?.commands,
       getJson: () => editor?.getJSON() as JSONContent,
+      getMarkdown: () => editor?.getMarkdown() ?? "",
     }),
     [editor],
   );

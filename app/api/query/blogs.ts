@@ -90,6 +90,7 @@ export async function getBlogDetail(id: string) {
 export interface ICreateBlogDto {
   title: string;
   content: JSONContent;
+  markdown: string;
   authorId: string;
   tags?: number[];
 }
@@ -106,6 +107,7 @@ export async function createBlog(dto: ICreateBlogDto) {
 export interface IUpdateBlogDto {
   title?: string;
   content?: JSONContent;
+  markdown?: string;
   tags?: number[];
 }
 
@@ -121,4 +123,55 @@ export async function updateBlog(id: string, dto: IUpdateBlogDto) {
 
 export async function deleteBlog(id: string) {
   return await request.delete(`/api/manage/blogs/${id}`);
+}
+
+export async function exportBlog(ids: string[]) {
+  // 不再使用 request.post（它可能会按 json 解析）
+  const res = await fetch(`/api/manage/blogs/export`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ ids }),
+  });
+
+  if (!res.ok) {
+    // 尝试读一下错误信息（如果后端返回 json）
+    const text = await res.text().catch(() => "");
+    throw new Error(text || `export failed: ${res.status}`);
+  }
+
+  const blob = await res.blob();
+  const filename = getFilenameFromContentDisposition(
+    res.headers.get("content-disposition"),
+  );
+
+  const url = URL.createObjectURL(blob);
+  try {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function getFilenameFromContentDisposition(cd: string | null | undefined) {
+  if (!cd) return "blogs.zip";
+
+  // RFC 5987: filename*=UTF-8''xxx
+  const m1 = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(cd);
+  if (m1?.[1]) return decodeURIComponent(m1[1]);
+
+  // filename="xxx"
+  const m2 = /filename\s*=\s*"([^"]+)"/i.exec(cd);
+  if (m2?.[1]) return m2[1];
+
+  // filename=xxx
+  const m3 = /filename\s*=\s*([^;]+)/i.exec(cd);
+  if (m3?.[1]) return m3[1].trim();
+
+  return "blogs.zip";
 }

@@ -6,6 +6,7 @@ import { Dropcursor, Placeholder } from "@tiptap/extensions";
 import { Editor } from "@tiptap/react";
 import { DefaultPlaceholder } from "../constant";
 import { uploadImage } from "@/app/api/query";
+import { Markdown } from "@tiptap/markdown";
 
 // 图片上传
 export const ImgHandler = async (file: File) => {
@@ -73,4 +74,5 @@ export const baseExtensions = [
       imgHandler(currentEditor, files, pos);
     },
   }), // 文件处理扩展
+  Markdown,
 ];
