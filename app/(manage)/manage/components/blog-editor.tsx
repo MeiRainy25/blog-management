@@ -22,6 +22,7 @@ import { Loading } from "@/components/loading";
 import MultiSelect from "@/components/multi-select";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { marked } from "marked";
 
 interface BlogEditorProps {
   blog?: TBlogDetail;
@@ -49,6 +50,10 @@ export default function BlogEditor(props: BlogEditorProps) {
   const editorIns = React.useRef<EditorRef | null>(null);
 
   const router = useRouter();
+  const [storageBlog, setStorageBlog] = React.useState<{
+    title: string;
+    content: string;
+  } | null>(null);
 
   const {
     data: tagsData,
@@ -63,6 +68,8 @@ export default function BlogEditor(props: BlogEditorProps) {
     onSuccess: () => {
       router.back();
       toast.success("博客创建成功");
+      localStorage.removeItem("uploadedBlogTitle");
+      localStorage.removeItem("uploadedBlogContent");
     },
   });
   const { mutate: update, isPending: updateLoading } = useMutation({
@@ -93,7 +100,7 @@ export default function BlogEditor(props: BlogEditorProps) {
 
   const form = useForm({
     defaultValues: {
-      title: blog?.title ?? "",
+      title: blog?.title ?? storageBlog?.title ?? "",
       content: blog?.content ?? EmptyContent,
       tags: blog?.tags.map((tag) => tag.id) ?? [],
     },
@@ -103,9 +110,30 @@ export default function BlogEditor(props: BlogEditorProps) {
     onSubmit: ({ value }) => onSubmit(value),
   });
 
+  React.useEffect(() => {
+    if (!isEdit) {
+      const title = localStorage.getItem("uploadedBlogTitle");
+      const content = localStorage.getItem("uploadedBlogContent");
+      if (title && content) {
+        setStorageBlog({ title, content });
+      }
+    }
+  }, [isEdit]);
+
+  React.useEffect(() => {
+    if (storageBlog) {
+      const html = marked.parse(storageBlog.content);
+      editorIns.current?.commands()?.setContent(html, { emitUpdate: true });
+      const jsonNode = editorIns.current?.getJson();
+      form.setFieldValue("content", jsonNode ?? EmptyContent);
+    }
+  }, [storageBlog, form]);
+
   return (
     <div className="flex flex-col gap-2 p-1 relative h-full w-full">
-      <Loading loading={createLoading || updateLoading} />
+      <Loading
+        loading={createLoading || updateLoading || tagsFetching || tagsPending}
+      />
       <form
         onSubmit={(e) => {
           e.preventDefault();

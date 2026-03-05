@@ -26,6 +26,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { openFileUploader } from "@/lib/utils";
+import * as marked from "marked";
 
 export default function BlogsPage() {
   const router = useRouter();
@@ -56,6 +58,28 @@ export default function BlogsPage() {
       refetch();
     },
   });
+
+  const onCreateBlog = () => {
+    router.push("/manage/blogs/new");
+    localStorage.removeItem("uploadedBlogTitle");
+    localStorage.removeItem("uploadedBlogContent");
+  };
+
+  const onUpload = () => {
+    openFileUploader({
+      callback: fileUploadCallback,
+    });
+  };
+
+  const fileUploadCallback = async (file: File) => {
+    const text = await file.text();
+    localStorage.setItem("uploadedBlogContent", text);
+    localStorage.setItem(
+      "uploadedBlogTitle",
+      file.name.replace(/\.[^/.]+$/, ""),
+    );
+    router.push("/manage/blogs/new");
+  };
 
   const actions = (row: Row<TBlogData>) => {
     const events: TDropdownButtonEvent[] = [
@@ -178,15 +202,11 @@ export default function BlogsPage() {
           <Button size="lg" className={"text-md"} onClick={() => refetch()}>
             <RotateCcw />
           </Button>
-          <Button
-            size={"lg"}
-            className={"text-md"}
-            onClick={() => router.push("/manage/blogs/new")}
-          >
+          <Button size={"lg"} className={"text-md"} onClick={onCreateBlog}>
             <CirclePlus className={"mr-1"} />
             新建博客
           </Button>
-          <Button size={"lg"} className={"text-md"}>
+          <Button size={"lg"} className={"text-md"} onClick={onUpload}>
             <Upload className={"mr-1"} />
             上传博客
           </Button>
