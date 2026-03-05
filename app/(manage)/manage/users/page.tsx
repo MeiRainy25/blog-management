@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteTag, getTags, TTag } from "@/app/api/query";
+import { deleteUser, getUsers, TUserData } from "@/app/api/query";
 import { Button } from "@/components/ui/button";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { ColumnDef, Row } from "@tanstack/react-table";
@@ -24,54 +24,58 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import TagEditor from "../components/tag-editor";
+import UserEditor from "../components/user-editor";
 import { toast } from "sonner";
+import { userAuthStore } from "@/lib/store/auth";
 
-export default function TagsPage() {
+export default function UsersPage() {
+  const user = userAuthStore((store) => store.user);
+
   const [pagination, setPagination] = React.useState({
     current: 1,
     pageSize: 10,
   });
-  const [editTag, setEditTag] = React.useState<TTag | null>(null);
+  const [editUser, setEditUser] = React.useState<TUserData | null>(null);
   const [open, setOpen] = React.useState(false);
 
   const {
     isPending,
-    data: tagsData,
+    data: usersData,
     isFetching,
     refetch,
   } = useQuery({
-    queryKey: ["tags", pagination.current, pagination.pageSize],
+    queryKey: ["users", pagination.current, pagination.pageSize],
     queryFn: () =>
-      getTags({
+      getUsers({
         page: pagination.current,
         pageSize: pagination.pageSize,
       }),
     placeholderData: keepPreviousData,
   });
 
-  const { mutate: delTag, isPending: isDeleting } = useMutation({
-    mutationFn: (id: number) => deleteTag(id),
+  const { mutate: delUser, isPending: isDeleting } = useMutation({
+    mutationFn: (id: string) => deleteUser(id),
     onSuccess: () => {
       refetch();
-      toast.success("标签删除成功");
+      toast.success("用户删除成功");
     },
   });
 
-  const actions = (row: Row<TTag>) => {
+  const actions = (row: Row<TUserData>) => {
     const events: TDropdownButtonEvent[] = [
       {
         title: "编辑",
         icon: <SquarePen />,
         onClick: () => {
-          setEditTag(row.original);
+          setEditUser(row.original);
           setOpen(true);
         },
       },
       {
         title: "删除",
         icon: <Trash />,
-        onClick: () => delTag(row.original.id),
+        onClick: () => delUser(row.original.id),
+        disabled: row.original.id === user?.id,
       },
     ];
 
@@ -82,37 +86,21 @@ export default function TagsPage() {
     );
   };
 
-  const columns: ColumnDef<TTag>[] = [
+  const columns: ColumnDef<TUserData>[] = [
     {
       header: () => {
         return <span>{"ID"}</span>;
       },
       accessorKey: "id",
-      size: 40,
+      size: 240,
     },
     {
-      header: "名称",
-      accessorKey: "name",
+      header: "昵称",
+      accessorKey: "nickname",
     },
     {
-      header: "颜色",
-      accessorKey: "color",
-      cell: ({ getValue }) => {
-        const val = getValue() as string;
-        return (
-          <div className="flex items-center">
-            <span
-              className={"inline-block w-4 h-4 rounded-full"}
-              style={{ backgroundColor: val }}
-            ></span>
-            <span className={"ml-2"}>{val}</span>
-          </div>
-        );
-      },
-    },
-    {
-      header: "分组",
-      accessorKey: "group",
+      header: "邮箱",
+      accessorKey: "email",
     },
     {
       header: "创建于",
@@ -148,7 +136,7 @@ export default function TagsPage() {
     <>
       <div className={"h-full w-full flex flex-col gap-2"}>
         <div className={"flex items-center justify-between"}>
-          <p className={"font-bold text-lg"}>标签列表</p>
+          <p className={"font-bold text-lg"}>用户列表</p>
           <div className={"flex items-center gap-2"}>
             <Button size="lg" className={"text-md"} onClick={() => refetch()}>
               <RotateCcw />
@@ -157,19 +145,19 @@ export default function TagsPage() {
               size={"lg"}
               className={"text-md"}
               onClick={() => {
-                setEditTag(null);
+                setEditUser(null);
                 setOpen(true);
               }}
             >
               <CirclePlus className={"mr-1"} />
-              新建标签
+              新建用户
             </Button>
           </div>
         </div>
 
         <DataTable
           loading={isFetching || isPending || isDeleting}
-          data={tagsData?.data ?? []}
+          data={usersData?.data ?? []}
           columns={columns}
           pagination={{
             current: pagination.current,
@@ -181,22 +169,23 @@ export default function TagsPage() {
                 pageSize,
               }));
             },
-            total: tagsData?.total ?? 0,
+            total: usersData?.total ?? 0,
           }}
         />
       </div>
+
       <Drawer open={open} onOpenChange={setOpen} direction="right">
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle>{!!editTag ? "编辑标签" : "新建标签"}</DrawerTitle>
+            <DrawerTitle>{editUser ? "编辑用户" : "新建用户"}</DrawerTitle>
           </DrawerHeader>
           <div className={"px-4 w-full"}>
-            <TagEditor
-              tag={editTag}
+            <UserEditor
+              user={editUser}
               onSuccess={() => {
                 setOpen(false);
                 refetch();
-                toast.success(!!editTag ? "标签更新成功" : "标签创建成功");
+                toast.success(editUser ? "用户更新成功" : "用户创建成功");
               }}
             />
           </div>

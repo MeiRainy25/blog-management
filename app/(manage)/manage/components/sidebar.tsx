@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/tooltip";
 import { userAuthStore } from "@/lib/store/auth";
 import { cn } from "@/lib/utils";
-import { Book, LogOut, House, Tag } from "lucide-react";
+import { Book, LogOut, House, Tag, User } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 import UserMenu, { IMenu } from "./user-menu";
@@ -38,6 +38,11 @@ const sidebarList: SidebarItemProps[] = [
     title: "标签管理",
     path: "/manage/tags",
     icon: <Tag />,
+  },
+  {
+    title: "用户管理",
+    path: "/manage/users",
+    icon: <User />,
   },
 ];
 
@@ -105,7 +110,7 @@ export function ManageSidebarItem(props: SidebarItemProps) {
             "transition-all duration-150",
             collapsed ? "px-1" : "px-2",
             {
-              "bg-muted text-muted-foreground": isActive,
+              "bg-accent text-accent-foreground": isActive,
             },
           )}
           onClick={redirectEvent}

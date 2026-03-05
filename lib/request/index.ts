@@ -1,5 +1,6 @@
 import axios from "axios";
 import { userAuthStore } from "../store/auth";
+import { toast } from "sonner";
 
 /**
  * 刷新accessToken的api地址
@@ -56,6 +57,10 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const isPassApi = PASS_API_URL.includes(originalRequest.url);
+
+    if (error.response?.data?.message) {
+      toast.error(error.response.data.message);
+    }
 
     // refresh接口错误, 直接抛出错误
     if (originalRequest.url === API_REFRESH_ACCESS_TOKEN) {
